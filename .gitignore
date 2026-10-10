@@ -1,0 +1,22 @@
+# Environments
+.venv/
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Datasets (multi-GB; download with the notebook instead)
+data/
+
+# Model weights and checkpoints
+models/*
+!models/.gitkeep
+*.pth
+*.pt
+*.ckpt
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
