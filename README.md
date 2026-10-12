@@ -27,7 +27,7 @@ notebooks/
 results/mask_check/   sample overlays used to verify mask quality
 ```
 
-## Getting started
+## Setup
 
 ```bash
 python -m venv .venv
@@ -35,10 +35,25 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-1. Download the SpaceNet 2 AOI 3 (Paris) data, e.g. with `awscli` from the public SpaceNet S3 bucket (the training archive is about 5 GB). The data is not stored in this repo.
+## Dataset
+
+The data is **not** stored in this repo (several GB). It comes from the public SpaceNet datasets (AOI 3 – Paris):
+
+- SpaceNet on AWS (Registry of Open Data): https://registry.opendata.aws/spacenet/
+- SpaceNet website / challenge descriptions: https://spacenet.ai/datasets/
+- Bucket: `s3://spacenet-dataset/` (anonymous access), e.g.
+  ```bash
+  aws s3 ls --no-sign-request s3://spacenet-dataset/spacenet/
+  aws s3 cp --no-sign-request s3://spacenet-dataset/spacenet/<challenge>/tarballs/<AOI_3_Paris archive> data/raw/
+  ```
+  Building footprints come from SpaceNet 2 (`SN2_buildings`) and road centerlines from SpaceNet 3 (`SN3_roads`); both cover AOI 3 – Paris. Extract the archives under `data/raw/`.
+
+## Getting started
+
+1. Download the data (see above) into `data/raw/`.
 2. Generate masks: `python src/make_masks.py`
 3. Sanity-check them: `python src/check_masks.py`
-4. Training and evaluation (notebooks `03` and `04`) are still to be written.
+4. Build and split the dataset (`src/build_dataset.py`, `src/split.py`), train (`src/train.py`, or `notebooks/03_train_kaggle.ipynb` on Kaggle) and evaluate (`src/evaluate.py`). Metrics are in `results/metrics.md`.
 
 ## Stack
 
