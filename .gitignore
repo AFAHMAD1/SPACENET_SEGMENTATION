@@ -1,25 +1,30 @@
-# Environments
+# Python
+__pycache__/
+*.py[cod]
 .venv/
 venv/
-__pycache__/
-*.pyc
 .ipynb_checkpoints/
 
-# Datasets (multi-GB; download with the notebook instead)
-data/
+# Data (too large for GitHub; see README "How to run")
+data/raw/
+data/images/
+data/masks/
+kaggle_upload/
 
-# Model weights and checkpoints
-models/*
-!models/.gitkeep
-*.pth
-*.pt
-*.ckpt
+# Trained checkpoints (each 55-98 MB; GitHub warns above 50 MB, rejects above 100 MB)
+models/*.pth
+models/*.zip
 
-# OS / editor
+# Keep small result files (metrics, logs, figures) tracked
+!results/
+
+# OS / editors
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
 
-# Kaggle upload bundle (large archives, duplicate of src/)
-kaggle_upload/
+# Hugging Face / Gradio cache
+.cache/
+flagged/
+.gradio/
