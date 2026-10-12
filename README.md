@@ -4,6 +4,18 @@ Pixel-level semantic segmentation of satellite imagery into three classes — **
 
 > Course project: *Hava ve Uydu Görüntülerinde Yapı ve Arazi Segmentasyonu*
 
+![Python](https://img.shields.io/badge/python-3.12-blue)
+![PyTorch](https://img.shields.io/badge/PyTorch-segmentation--models--pytorch-orange)
+![Dataset](https://img.shields.io/badge/data-SpaceNet%20Paris-green)
+
+<!-- Add a prediction figure here, e.g.:
+![Predictions](results/predictions/<a_tile>.png)
+Image | ground truth | U-Net | DeepLabV3+ | SegFormer -->
+
+**Headline result:** all three models reach ~0.725 test mIoU — a tie. SegFormer matches the CNNs with about half the parameters.
+
+> **Note:** the dataset, raw downloads and trained checkpoints are **not** included in this repository because of their size. See [How to run](#how-to-run) to download the data and reproduce the results.
+
 ---
 
 ## Task
@@ -94,7 +106,9 @@ Identical training settings for all models:
 | DeepLabV3+ | 0.724 | 0.831 | 0.947 | 0.942 | **0.580** | 0.651 |
 | SegFormer | 0.725 | 0.831 | 0.945 | 0.940 | 0.577 | 0.657 |
 
-Per-class precision/recall: `results/metrics.md`. Confusion matrices: `results/confusion_<model>.png`.
+Per-class precision/recall: [`results/metrics.md`](results/metrics.md). Confusion matrices: `results/confusion_<model>.png`.
+
+![Training curves](results/training_curves.png)
 
 ### Efficiency
 
@@ -166,6 +180,8 @@ SpaceNet_Segmentation/
 ### 1. Setup
 
 ```bash
+git clone <this-repo-url>
+cd SpaceNet_Segmentation
 python -m venv .venv
 .venv\Scripts\activate          # Windows
 pip install -r requirements.txt
@@ -218,4 +234,6 @@ Open the local URL shown (e.g. `http://127.0.0.1:7860`). Pick a test tile or upl
 - Xie et al., *SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers*, 2021
 - segmentation-models-pytorch: https://github.com/qubvel-org/segmentation_models.pytorch
 
-SpaceNet data is licensed under CC BY-SA 4.0.
+## License
+
+SpaceNet data is licensed under CC BY-SA 4.0 and is not redistributed here. Code license: add your choice (e.g. MIT) in a `LICENSE` file.
