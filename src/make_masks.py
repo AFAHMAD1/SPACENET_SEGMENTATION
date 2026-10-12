@@ -48,7 +48,7 @@ def to_uint8(arr, lo, hi):
     return (np.clip(out, 0, 1) * 255).round().astype("uint8").transpose(1, 2, 0)
 
 
-def build_mask(shape, transform, roads, buildings):
+def build_mask(shape, transform, roads, buildings, nodata=None):
     mask = np.zeros(shape, dtype="uint8")
     if len(roads):
         mask = rasterize(((g, C.ROAD) for g in roads.geometry), out_shape=shape,
@@ -57,14 +57,17 @@ def build_mask(shape, transform, roads, buildings):
         b = rasterize(((g, C.BUILDING) for g in buildings.geometry), out_shape=shape,
                       transform=transform, fill=0, dtype="uint8")
         mask[b == C.BUILDING] = C.BUILDING  # buildings win on overlap
+    if nodata is not None:
+        mask[nodata] = C.IGNORE
     return mask
 
 
-def run():
+def run(keep_ids=None):
+    """Write PNGs for tiles in keep_ids (all tiles if None); returns per-tile class percentages."""
     C.IMAGES_DIR.mkdir(parents=True, exist_ok=True)
     C.MASKS_DIR.mkdir(parents=True, exist_ok=True)
     tiles = sorted(C.RGB_DIR.glob("*.tif"))
-    lo, hi = percentile_stretch(tiles)
+    lo, hi = percentile_stretch(tiles)  # scaling is fixed from all tiles, not just the kept ones
     print("stretch lo", lo, "hi", hi)
 
     roads = load_roads()
@@ -72,30 +75,32 @@ def run():
 
     rows = []
     for p in tqdm(tiles):
+        if keep_ids is not None and tile_id(p) not in keep_ids:
+            continue
         with rasterio.open(p) as r:
             bounds, transform, shape = r.bounds, r.transform, (r.height, r.width)
             tile_box = box(*bounds)
             hit = sindex.query(tile_box, predicate="intersects")
-            if len(hit) == 0:
-                continue  # only tiles with at least one road
             img = r.read()
         tid = tile_id(p)
         b_path = C.BUILDING_DIR / f"buildings_{tid}.geojson"
         buildings = gpd.read_file(b_path) if b_path.exists() else gpd.GeoDataFrame(geometry=[])
-        mask = build_mask(shape, transform, roads.iloc[hit], buildings)
+        nodata = ~img.any(axis=0)  # all RGB bands zero
+        mask = build_mask(shape, transform, roads.iloc[hit], buildings, nodata)
         Image.fromarray(to_uint8(img, lo, hi)).save(C.IMAGES_DIR / f"{tid}.png")
         Image.fromarray(mask).save(C.MASKS_DIR / f"{tid}.png")
         n = mask.size
+        valid = max(int((mask != C.IGNORE).sum()), 1)  # percentages exclude no-data
         rows.append({"tile_id": tid,
-                     "road_pixels_%": 100 * (mask == C.ROAD).sum() / n,
-                     "building_pixels_%": 100 * (mask == C.BUILDING).sum() / n,
-                     "land_pixels_%": 100 * (mask == C.LAND).sum() / n})
-    df = pd.DataFrame(rows)
-    df.to_csv(C.TILES_CSV, index=False)
-    return df
+                     "road_pixels_%": 100 * (mask == C.ROAD).sum() / valid,
+                     "building_pixels_%": 100 * (mask == C.BUILDING).sum() / valid,
+                     "land_pixels_%": 100 * (mask == C.LAND).sum() / valid,
+                     "nodata_pixels_%": 100 * nodata.sum() / n})
+    return pd.DataFrame(rows)
 
 
 if __name__ == "__main__":
     df = run()
+    df.to_csv(C.TILES_CSV, index=False)
     print(len(df), "tiles")
     print(df[["land_pixels_%", "road_pixels_%", "building_pixels_%"]].mean().round(2))
