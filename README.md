@@ -8,9 +8,8 @@ Pixel-level semantic segmentation of satellite imagery into three classes — **
 ![PyTorch](https://img.shields.io/badge/PyTorch-segmentation--models--pytorch-orange)
 ![Dataset](https://img.shields.io/badge/data-SpaceNet%20Paris-green)
 
-<!-- Add a prediction figure here, e.g.:
-![Predictions](results/predictions/<a_tile>.png)
-Image | ground truth | U-Net | DeepLabV3+ | SegFormer -->
+![Predictions](results/predictions/AOI_3_Paris_img864.png)
+*Test tile `AOI_3_Paris_img864`: image | ground truth | U-Net | DeepLabV3+ | SegFormer (road yellow, building red).*
 
 **Headline result:** all three models reach ~0.725 test mIoU — a tie. SegFormer matches the CNNs with about half the parameters.
 
@@ -161,16 +160,19 @@ SpaceNet_Segmentation/
 │   ├── split.py        # train/val/test split
 │   ├── dataset.py      # PyTorch Dataset + augmentations
 │   ├── check_dataset.py# augmentation alignment check
-│   └── train.py        # training (--model unet | deeplabv3plus | segformer)
+│   ├── train.py        # training (--model unet | deeplabv3plus | segformer)
+│   └── evaluate.py     # test-set metrics, confusion matrices, prediction figures
 ├── notebooks/
 │   ├── 01_download.ipynb
 │   ├── 02_make_masks.ipynb
 │   ├── 03_train_kaggle.ipynb
 │   └── 04_evaluate.ipynb
-├── models/             # trained checkpoints (*_best.pth)
+├── models/             # trained checkpoints (not tracked; see "Pretrained checkpoints")
 ├── results/            # logs, metrics, curves, confusion matrices, predictions
 ├── kaggle_upload/      # spacenet_data.bin for Kaggle
-└── app.py              # Gradio demo
+├── app.py              # Gradio demo
+├── requirements.txt
+└── LICENSE
 ```
 
 ---
@@ -213,7 +215,18 @@ On Kaggle: upload `kaggle_upload/spacenet_data.bin` as a dataset (the `.bin` ext
 
 ### 5. Evaluate
 
-Place the checkpoints in `models/` and the logs in `results/`, then run `notebooks/04_evaluate.ipynb`.
+Place the checkpoints in `models/` and the logs in `results/`, then either run `notebooks/04_evaluate.ipynb` or:
+
+```bash
+cd src
+python evaluate.py
+```
+
+This writes `results/metrics.csv`, `metrics.md`, `training_curves.png`, `confusion_<model>.png` and `predictions/`.
+
+### Pretrained checkpoints
+
+The three trained checkpoints (`unet_best`, `deeplabv3plus_best`, `segformer_best`; 55–98 MB each) are too large to track in git. Put them in `models/` as `<model>_best.pth` (a `.zip` extension also works; the code loads either). You can also retrain them with step 4.
 
 ### 6. Demo
 
@@ -236,4 +249,4 @@ Open the local URL shown (e.g. `http://127.0.0.1:7860`). Pick a test tile or upl
 
 ## License
 
-SpaceNet data is licensed under CC BY-SA 4.0 and is not redistributed here. Code license: add your choice (e.g. MIT) in a `LICENSE` file.
+Code: [MIT](LICENSE). SpaceNet data is licensed under CC BY-SA 4.0 and is not redistributed here.

@@ -10,3 +10,4 @@ pandas
 matplotlib
 tqdm
 awscli
+gradio
